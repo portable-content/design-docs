@@ -1,0 +1,8 @@
+{
+  "allowed": [
+    "text/markdown",
+    "text/html;profile=markdown",
+    "text/plain;role=extract"
+  ]
+}
+

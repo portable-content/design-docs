@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://portablecontent.dev/registry/kinds/image.schema.json",
+  "title": "Image payload",
+  "type": "object",
+  "properties": {
+    "uri": { "type": "string" },
+    "alt": { "type": ["string", "null"] },
+    "width": { "type": ["integer", "null"], "minimum": 0 },
+    "height": { "type": ["integer", "null"], "minimum": 0 }
+  },
+  "required": ["uri"],
+  "additionalProperties": false
+}
+

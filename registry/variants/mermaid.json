@@ -1,0 +1,9 @@
+{
+  "allowed": [
+    "image/svg+xml;profile=mermaid",
+    "image/png;profile=mermaid;dpi=96",
+    "image/png;profile=mermaid;dpi=192",
+    "text/plain;role=extract"
+  ]
+}
+

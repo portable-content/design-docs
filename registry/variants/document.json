@@ -1,0 +1,8 @@
+{
+  "allowed": [
+    "image/png;role=thumbnail;page=1;width=256",
+    "image/png;role=thumbnail;page=1;width=512",
+    "text/plain;role=extract"
+  ]
+}
+

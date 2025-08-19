@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://portablecontent.dev/registry/kinds/markdown.schema.json",
+  "title": "Markdown payload",
+  "type": "object",
+  "properties": {
+    "source": { "type": "string" }
+  },
+  "required": ["source"],
+  "additionalProperties": false
+}
+

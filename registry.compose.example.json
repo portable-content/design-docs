@@ -1,0 +1,10 @@
+{
+  "base": "@portable-content/registry@^0.3",
+  "extensions": ["@acme/content-registry-3d@^1", "./local-registry"],
+  "enable": ["markdown", "mermaid", "document", "acme:3d-model"],
+  "disable": ["embed"],
+  "overrides": {
+    "markdown.sanitization": "./policies/markdown-strict.json"
+  }
+}
+

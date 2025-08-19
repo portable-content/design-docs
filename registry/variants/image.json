@@ -1,0 +1,9 @@
+{
+  "allowed": [
+    "image/avif;width=*",
+    "image/webp;width=*",
+    "image/jpeg;width=*",
+    "image/png;width=*"
+  ]
+}
+

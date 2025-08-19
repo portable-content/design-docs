@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://portablecontent.dev/registry/kinds/document.schema.json",
+  "title": "Document payload",
+  "type": "object",
+  "properties": {
+    "uri": { "type": "string" },
+    "contentType": { "type": ["string", "null"] },
+    "pages": { "type": ["integer", "null"], "minimum": 1 },
+    "bytes": { "type": ["integer", "null"], "minimum": 0 }
+  },
+  "required": ["uri"],
+  "additionalProperties": false
+}
+

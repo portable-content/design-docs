@@ -1,0 +1,11 @@
+{
+  "id": "markdown-safe",
+  "allowedElements": ["p","h1","h2","h3","h4","h5","h6","ul","ol","li","a","code","pre","blockquote","em","strong","hr","table","thead","tbody","tr","th","td","img"],
+  "allowedAttributes": {
+    "a": ["href","rel"],
+    "img": ["src","alt","width","height"]
+  },
+  "protocolAllowlist": ["https","http","mailto"],
+  "notes": "Server must add rel=\"noopener noreferrer\" on <a> and only allow CDN for <img src>."
+}
+

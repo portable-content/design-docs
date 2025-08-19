@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "registryVersion": "0.1.0",
+  "contentSpecVersion": "0.1.0",
+  "kinds": [
+    { "id": "markdown", "schema": "../kinds/markdown.schema.json", "sanitization": "../policies/sanitization/markdown-safe.json", "variants": "../variants/markdown.json" },
+    { "id": "mermaid",  "schema": "../kinds/mermaid.schema.json",  "variants": "../variants/mermaid.json" },
+    { "id": "image",    "schema": "../kinds/image.schema.json",    "variants": "../variants/image.json" },
+    { "id": "document", "schema": "../kinds/document.schema.json", "variants": "../variants/document.json" }
+  ],
+  "transforms": [
+    { "id": "mermaid:render", "toolImage": "ghcr.io/portable-content/mermaid-cli:1.0.0", "inputs": ["mermaid"], "outputs": ["image/svg+xml;profile=mermaid", "image/png;profile=mermaid;dpi=192"] },
+    { "id": "document:thumbnail", "toolImage": "ghcr.io/portable-content/pdf-tools:1.0.0", "inputs": ["application/pdf"], "outputs": ["image/png;role=thumbnail;width=256", "image/png;role=thumbnail;width=512"] },
+    { "id": "image:resize", "toolImage": "ghcr.io/portable-content/image-tools:1.0.0", "inputs": ["image/*"], "outputs": ["image/webp;width=*,image/avif;width=*"] }
+  ],
+  "policies": {
+    "sanitization": { "markdown-safe": "../policies/sanitization/markdown-safe.json" }
+  }
+}
+

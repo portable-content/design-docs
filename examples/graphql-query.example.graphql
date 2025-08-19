@@ -1,0 +1,30 @@
+# Example GraphQL query using CapabilitiesInput for Portable Content
+query GetNote($id: ID!, $caps: CapabilitiesInput) {
+  note(id: $id) {
+    id
+    title
+    summary
+    content {
+      id
+      title
+      summary
+      blocks {
+        id
+        kind
+        ... on MarkdownBlock { variants { mediaType uri } }
+        ... on MermaidBlock { variants { mediaType uri width height } }
+      }
+    }
+  }
+}
+
+# Variables example
+# {
+#   "id": "note_456",
+#   "caps": {
+#     "accept": ["image/svg+xml","image/png","text/html","text/markdown"],
+#     "width": 390,
+#     "density": 3
+#   }
+# }
+

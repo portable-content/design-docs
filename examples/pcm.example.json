@@ -1,0 +1,32 @@
+{
+  "contentSpecVersion": "0.1.0",
+  "registryVersion": "0.1.0",
+  "id": "content_123",
+  "type": "note",
+  "title": "Portable Content Example",
+  "summary": "Markdown + Mermaid with variants.",
+  "blocks": [
+    {
+      "id": "b1",
+      "kind": "markdown",
+      "payload": { "source": "## Hello Portable Content" },
+      "variants": [
+        { "mediaType": "text/html;profile=markdown", "uri": "https://cdn.example.com/content_123/b1.html" },
+        { "mediaType": "text/markdown", "uri": "s3://bucket/content_123/b1.md" },
+        { "mediaType": "text/plain;role=extract", "uri": "https://cdn.example.com/content_123/b1.txt" }
+      ]
+    },
+    {
+      "id": "b2",
+      "kind": "mermaid",
+      "payload": { "source": "graph TD; A-->B;", "theme": "default" },
+      "variants": [
+        { "mediaType": "image/svg+xml;profile=mermaid", "uri": "https://cdn.example.com/content_123/b2.svg", "width": 800, "height": 400 },
+        { "mediaType": "image/png;profile=mermaid;dpi=192", "uri": "https://cdn.example.com/content_123/b2@2x.png", "width": 1600, "height": 800 },
+        { "mediaType": "text/plain;role=extract", "uri": "https://cdn.example.com/content_123/b2.txt" }
+      ]
+    }
+  ],
+  "representations": { "summary": { "blocks": ["b1", "b2"] } }
+}
+

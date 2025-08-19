@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://portablecontent.dev/spec/schemas/content-item.schema.json",
+  "title": "ContentItem",
+  "type": "object",
+  "required": ["id", "type", "blocks"],
+  "properties": {
+    "id": { "type": "string" },
+    "type": { "type": "string" },
+    "title": { "type": ["string", "null"] },
+    "summary": { "type": ["string", "null"] },
+    "createdAt": { "type": ["string", "null"], "format": "date-time" },
+    "updatedAt": { "type": ["string", "null"], "format": "date-time" },
+    "createdBy": { "type": ["string", "null"] },
+    "blocks": {
+      "type": "array",
+      "items": { "$ref": "block.schema.json" },
+      "minItems": 0
+    },
+    "representations": {
+      "type": ["object", "null"],
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "blocks": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
+

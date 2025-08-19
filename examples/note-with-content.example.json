@@ -1,0 +1,21 @@
+{
+  "note": {
+    "id": "note_456",
+    "title": "Example Note",
+    "summary": "A note that references a Portable Content Manifest (PCM).",
+    "content_ref": "content_123"
+  },
+  "contentItem": {
+    "contentSpecVersion": "0.1.0",
+    "registryVersion": "0.1.0",
+    "id": "content_123",
+    "type": "note",
+    "title": "Portable Content Example",
+    "summary": "Markdown + Mermaid with variants.",
+    "blocks": [
+      {"id":"b1","kind":"markdown","variants":[{"mediaType":"text/html;profile=markdown","uri":"https://cdn.example.com/content_123/b1.html"}]},
+      {"id":"b2","kind":"mermaid","variants":[{"mediaType":"image/svg+xml;profile=mermaid","uri":"https://cdn.example.com/content_123/b2.svg","width":800,"height":400}]}
+    ]
+  }
+}
+
