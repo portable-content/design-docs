@@ -2,9 +2,7 @@
 
 ## Database Schema
 
-### Vector Database Schema
-
-The system supports multiple storage paradigms for content metadata. The core content schema is domain-agnostic and focuses purely on content representation, not ownership or workspace management.
+The system supports multiple storage paradigms for content metadata. The core content schema is domain-agnostic.
 
 #### Core ContentItem Schema (Domain-Agnostic)
 ```json
