@@ -27,7 +27,7 @@ The system supports multiple storage paradigms for content metadata. The core co
 }
 ```
 
-> **Note**: Ownership, workspace management, and access control are application-domain concerns and should be handled separately from the core content representation.
+> **Note**: Ownership and access control are application-domain concerns and should be handled separately from the core content representation.
 
 ## Storage Implementation Options
 
@@ -352,7 +352,7 @@ index.upsert(vectors=[
 
 ## Domain Separation
 
-The core content system is designed to be domain-agnostic. Ownership, workspace management, and access control are separate concerns that should be implemented in the application layer:
+The core content system is designed to be domain-agnostic. Ownership and access control are separate concerns that should be implemented in the application layer:
 
 ```php
 // Core content service (domain-agnostic)
