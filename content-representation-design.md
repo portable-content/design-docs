@@ -175,10 +175,10 @@ query GetContent($id: ID!, $caps: CapabilitiesInput) {
 }
 ```
 
-## Persistence (Weaviate + Object Storage)
-- Single Weaviate class: ContentItem (one per content aggregate). Store pointers to canonical manifests and extracts; keep heavy assets in object storage.
+## Persistence (Vector Database + Object Storage)
+- Single vector database collection: ContentItem (one per content aggregate). Store pointers to canonical manifests and extracts; keep heavy assets in object storage.
 - Indicative properties:
-  - id (UUID), workspace_id (text UUID), owner_type (text), owner_id (text UUID), type (text), title (text), summary (text)
+  - id (UUID), type (text), title (text), summary (text)
   - kinds (text[]), manifest_uri (text), summary_extract (text), block_extracts (text[])
 - Summarization:
   - Maintain a human-authored or AI-generated ContentItem.summary (short text) to help AI/clients quickly understand the item (especially for links/documents).
@@ -189,8 +189,8 @@ query GetContent($id: ID!, $caps: CapabilitiesInput) {
   - /content/{content_id}/item.json (canonical JSON)
   - /content/{content_id}/blocks/{block_id}/payload.*
   - /content/{content_id}/blocks/{block_id}/variants/{encoded-media-type}/...
-- Indexing/Vectorization: vectorize title + summary_extract + block_extracts; filter by workspace_id/owner fields.
-- Optional future: add ContentBlock class for block-level search when needed.
+- Indexing/Vectorization: vectorize title + summary_extract + block_extracts; filter by type, kinds, flags.
+- Optional future: add ContentBlock collection for block-level search when needed.
 
 ## PHP Interfaces & Hydration (Sketch)
 - Block interface and concrete classes per kind; ContentItem aggregate; hydrator and repository.
@@ -204,9 +204,11 @@ final class MermaidBlock extends AbstractBlock { /* payload: source, theme? */ }
 final class ContentItem {
   public function __construct(
     public string $id,
-    public string $workspaceId,
+    public string $type,
     public ?string $title,
+    public ?string $summary,
     /** @var BlockInterface[] */ public array $blocks = [],
+    public ?array $representations = null,
   ) {}
 }
 
@@ -224,8 +226,9 @@ final class VariantDescriptor {
 }
 
 interface ContentRepository {
-  public function save(ContentItem $item): void; // upsert Weaviate + upload manifests
+  public function save(ContentItem $item): void; // upsert database + upload manifests
   public function getById(string $id): ContentItem; // load manifest + hydrate
+  public function search(SearchQuery $query): SearchResult; // search content
 }
 
 final class ContentHydrator {
@@ -245,36 +248,34 @@ final class VariantSelector {
 }
 ```
 
-## Weaviate Provisioner (Draft)
-- Ensure ContentItem class exists with proper properties and vectorization.
-- Centralize in the Weaviate schema provisioner list.
+## Vector Database Provisioner (Draft)
+- Ensure ContentItem collection/class exists with proper properties and vectorization.
+- Centralize in the vector database schema provisioner list.
 
 ```php
-final class WeaviateContentProvisioner {
-  public function __construct(private WeaviateClient $client) {}
+final class ContentStorageProvisioner {
+  public function __construct(private StorageClient $client) {}
   public function ensure(): void {
-    $class = [
-      'class' => 'ContentItem',
+    $schema = [
+      'collection' => 'ContentItem',
       'description' => 'Content aggregates with block variants and extracts',
       'vectorizer' => 'text2vec-openai', // or configured default
       'properties' => [
-        ['name' => 'workspace_id', 'dataType' => ['text']],
-        ['name' => 'owner_type', 'dataType' => ['text']],
-        ['name' => 'owner_id', 'dataType' => ['text']],
-        ['name' => 'type', 'dataType' => ['text']],
-        ['name' => 'title', 'dataType' => ['text']],
-        ['name' => 'summary', 'dataType' => ['text']],
-        ['name' => 'kinds', 'dataType' => ['text[]']],
-        ['name' => 'manifest_uri', 'dataType' => ['text']],
-        ['name' => 'summary_extract', 'dataType' => ['text']],
-        ['name' => 'block_extracts', 'dataType' => ['text[]']],
-        ['name' => 'flags', 'dataType' => ['text[]']],
-        ['name' => 'created_at', 'dataType' => ['date']],
-        ['name' => 'updated_at', 'dataType' => ['date']],
+        ['name' => 'id', 'type' => 'text'],
+        ['name' => 'type', 'type' => 'text'],
+        ['name' => 'title', 'type' => 'text'],
+        ['name' => 'summary', 'type' => 'text'],
+        ['name' => 'kinds', 'type' => 'text[]'],
+        ['name' => 'manifest_uri', 'type' => 'text'],
+        ['name' => 'summary_extract', 'type' => 'text'],
+        ['name' => 'block_extracts', 'type' => 'text[]'],
+        ['name' => 'flags', 'type' => 'text[]'],
+        ['name' => 'created_at', 'type' => 'datetime'],
+        ['name' => 'updated_at', 'type' => 'datetime'],
       ],
     ];
-    // Pseudocode: check if class exists; if not, create.
-    // $this->client->schema()->ensureClass($class);
+    // Pseudocode: check if collection exists; if not, create.
+    // $this->client->schema()->ensureCollection($schema);
   }
 }
 ```
@@ -290,7 +291,7 @@ sequenceDiagram
   participant G as GraphQL API (PHP)
   participant R as ContentRepository (PHP)
   participant S as Object Storage
-  participant W as Weaviate
+  participant W as Vector DB
   participant T as Transform Worker (Python)
 
   C->>G: mutation saveContent(blocks)
