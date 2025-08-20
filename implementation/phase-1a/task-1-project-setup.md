@@ -33,10 +33,10 @@ Initialize with:
 ```
 
 ### Validation:
-- [ ] Repository exists and is accessible
-- [ ] README.md file is present
+- [X] Repository exists and is accessible
+- [X] README.md file is present
 - [ ] .gitignore file contains PHP-specific ignores
-- [ ] Repository URL works: `https://github.com/yourusername/portable-content-php`
+- [X] Repository URL works: `https://github.com/portable-content/portable-content-php`
 
 ---
 
@@ -49,14 +49,14 @@ Initialize with:
 3. Navigate to your development directory
 4. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/portable-content-php.git
+   git clone https://github.com/portable-content/portable-content-php.git
    cd portable-content-php
    ```
 
 ### Validation:
-- [ ] Repository is cloned to local machine
-- [ ] Can navigate into project directory
-- [ ] `.git` folder exists (hidden folder)
+- [X] Repository is cloned to local machine
+- [X] Can navigate into project directory
+- [X] `.git` folder exists (hidden folder)
 - [ ] README.md and .gitignore are present locally
 
 ---
@@ -78,12 +78,12 @@ Initialize with:
 
 3. Answer the interactive prompts:
    ```
-   Package name: yourusername/portable-content-php
+   Package name: portable-content/portable-content-php
    Description: PHP implementation of portable content system
    Author: Your Name <your.email@example.com>
    Minimum Stability: stable
    Package Type: project
-   License: MIT (or leave blank)
+   License: Apache-2.0
    ```
 
 4. When asked about dependencies, say **no** for now (we'll add them manually)
@@ -91,7 +91,7 @@ Initialize with:
 ### Example composer.json Result:
 ```json
 {
-    "name": "yourusername/portable-content-php",
+    "name": "portable-content/portable-content-php",
     "description": "PHP implementation of portable content system",
     "type": "project",
     "authors": [
@@ -134,7 +134,12 @@ Initialize with:
            "ramsey/uuid": "^4.7"
        },
        "require-dev": {
-           "phpunit/phpunit": "^11.0"
+           "ergebnis/composer-normalize": "^2.42",
+           "friendsofphp/php-cs-fixer": "^3.0",
+           "phpstan/phpstan": "^1.10",
+           "phpstan/phpstan-phpunit": "^1.4",
+           "phpunit/phpunit": "^11.0",
+           "roave/security-advisories": "dev-master"
        },
        "autoload": {
            "psr-4": {
@@ -148,7 +153,13 @@ Initialize with:
        },
        "scripts": {
            "test": "phpunit",
-           "test-coverage": "phpunit --coverage-html coverage"
+           "test-coverage": "phpunit --coverage-clover coverage.xml --coverage-html coverage",
+           "cs-check": "php-cs-fixer fix --dry-run --diff",
+           "cs-fix": "php-cs-fixer fix",
+           "phpstan": "phpstan analyse",
+           "composer-normalize": "composer normalize --dry-run",
+           "composer-normalize-fix": "composer normalize",
+           "security-audit": "composer audit"
        }
    }
    ```
@@ -238,14 +249,14 @@ This is a minimal viable implementation focusing on markdown content storage and
 
 ## Requirements
 
-- PHP 8.2 or higher
+- PHP 8.3 or higher
 - Composer
 - SQLite (included with PHP)
 
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/portable-content-php.git
+git clone https://github.com/portable-content/portable-content-php.git
 cd portable-content-php
 composer install
 ```
@@ -266,8 +277,15 @@ composer test-coverage
 # Run specific test suite
 ./vendor/bin/phpunit --testsuite=Unit
 
-# Run tests with verbose output
-./vendor/bin/phpunit --verbose
+# Code quality checks
+composer cs-check          # Check code style
+composer cs-fix            # Fix code style
+composer phpstan           # Run static analysis
+composer security-audit    # Check for security issues
+
+# Composer maintenance
+composer composer-normalize # Check composer.json format
+composer composer-normalize-fix # Fix composer.json format
 ```
 
 ## Project Structure
@@ -333,11 +351,276 @@ Thumbs.db
 
 ---
 
-## Step 1.8: Update .gitignore for Testing
+## Step 1.8: Create Code Quality Configuration Files
+**Time:** 10-15 minutes
+
+### Instructions:
+1. Create `.php-cs-fixer.php` configuration:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+$finder = PhpCsFixer\Finder::create()
+    ->in(__DIR__ . '/src')
+    ->in(__DIR__ . '/tests')
+    ->name('*.php')
+    ->ignoreDotFiles(true)
+    ->ignoreVCS(true);
+
+return (new PhpCsFixer\Config())
+    ->setRules([
+        '@PHP-CS-Fixer' => true,
+        '@PHP83Migration' => true,
+        'declare_strict_types' => true,
+        'array_syntax' => ['syntax' => 'short'],
+        'ordered_imports' => ['sort_algorithm' => 'alpha'],
+        'no_unused_imports' => true,
+        'not_operator_with_successor_space' => false,
+        'trailing_comma_in_multiline' => true,
+        'phpdoc_scalar' => true,
+        'unary_operator_spaces' => true,
+        'binary_operator_spaces' => true,
+        'blank_line_before_statement' => [
+            'statements' => ['break', 'continue', 'declare', 'return', 'throw', 'try'],
+        ],
+        'phpdoc_single_line_var_spacing' => true,
+        'phpdoc_var_without_name' => true,
+        'method_argument_space' => [
+            'on_multiline' => 'ensure_fully_multiline',
+            'keep_multiple_spaces_after_comma' => true,
+        ],
+    ])
+    ->setFinder($finder)
+    ->setRiskyAllowed(true)
+    ->setUsingCache(true);
+```
+
+2. Create `phpstan.neon` configuration:
+
+```neon
+parameters:
+    level: 9
+    paths:
+        - src
+        - tests
+    excludePaths:
+        - tests/bootstrap.php
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+    ignoreErrors:
+        - '#Call to an undefined method PHPUnit\\Framework\\MockObject\\MockObject::#'
+```
+
+3. Create `.github/workflows` directory:
+```bash
+mkdir -p .github/workflows
+```
+
+### Validation:
+- [ ] .php-cs-fixer.php is created with proper configuration
+- [ ] phpstan.neon is created with appropriate rules
+- [ ] .github/workflows directory exists
+
+---
+
+## Step 1.9: Create GitHub Actions Workflows
+**Time:** 15-20 minutes
+
+### Instructions:
+1. Create `.github/workflows/test.yaml`:
+
+```yaml
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php-version: ['8.3', '8.4']
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP ${{ matrix.php-version }}
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_sqlite, dom, filter, gd, json
+        coverage: xdebug
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-${{ matrix.php-version }}-
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Run test suite
+      run: composer test-coverage
+
+    - name: Upload coverage reports to Codecov
+      if: matrix.php-version == '8.3'
+      uses: codecov/codecov-action@v5
+      with:
+        file: ./coverage.xml
+        flags: unittests,integration
+        name: codecov-umbrella
+        token: ${{ secrets.CODECOV_TOKEN }}
+```
+
+2. Create `.github/workflows/lint.yaml`:
+
+```yaml
+name: Lint
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  php-cs-fixer:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_sqlite, dom, filter, gd, json
+        coverage: none
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Run PHP CS Fixer
+      run: composer run-script cs-check
+
+  phpstan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_sqlite, dom, filter, gd, json
+        coverage: none
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Run PHPStan
+      run: composer run-script phpstan
+
+  composer-normalize:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_sqlite, dom, filter, gd, json
+        coverage: none
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Run Composer Normalize
+      run: composer run-script composer-normalize
+
+  security-audit:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_sqlite, dom, filter, gd, json
+        coverage: none
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Run Security Audit
+      run: composer run-script security-audit
+```
+
+### Validation:
+- [ ] test.yaml workflow is created with proper PHP matrix
+- [ ] lint.yaml workflow includes all quality checks
+- [ ] Codecov v4 is configured with integration test flags
+- [ ] All workflows use latest action versions
+
+---
+
+## Step 1.10: Update .gitignore for Testing and Tools
 **Time:** 5 minutes
 
 ### Instructions:
-Add these testing-specific entries to `.gitignore`:
+Add these comprehensive entries to `.gitignore`:
 
 ```gitignore
 # Composer
@@ -345,8 +628,15 @@ Add these testing-specific entries to `.gitignore`:
 
 # PHPUnit
 /coverage/
+coverage.xml
 .phpunit.cache/
 .phpunit.result.cache
+
+# PHP CS Fixer
+.php-cs-fixer.cache
+
+# PHPStan
+.phpstan.cache
 
 # Storage
 /storage/*.db
@@ -369,6 +659,9 @@ Thumbs.db
 # Testing
 /tests/_output/
 /tests/_support/_generated/
+
+# Build artifacts
+/build/
 ```
 
 ### Validation:
@@ -379,7 +672,7 @@ Thumbs.db
 
 ---
 
-## Step 1.9: Initial Commit
+## Step 1.11: Initial Commit
 **Time:** 5 minutes
 
 ### Instructions:
@@ -390,16 +683,18 @@ Thumbs.db
 
 2. Commit with descriptive message:
    ```bash
-   git commit -m "Initial project setup with testing infrastructure
+   git commit -m "Initial project setup with comprehensive tooling
 
-   - Created basic PHP project structure
-   - Added Composer configuration with dependencies
-   - Set up directory structure for src, tests, storage, migrations
+   - Created PHP project structure with modern tooling
+   - Added Composer configuration with quality tools
+   - Set up PHP CS Fixer, PHPStan, and security auditing
    - Configured PHPUnit with proper test structure
    - Added base TestCase class with testing utilities
    - Created example tests to verify setup
+   - Set up GitHub Actions for CI/CD with Codecov v4
+   - Added comprehensive linting and quality checks
    - Updated README with project information
-   - Configured .gitignore for PHP project and testing"
+   - Configured .gitignore for all tools and artifacts"
    ```
 
 3. Push to GitHub:
@@ -473,12 +768,12 @@ declare(strict_types=1);
 namespace PortableContent\Tests;
 
 use PDO;
-use PHPUnit\Framework\TestCase as PHPUnitTestCase;
+use PHPUnit\Framework\TestCase;
 use PortableContent\Database\Database;
 use PortableContent\Repository\RepositoryFactory;
 use PortableContent\Repository\ContentRepositoryInterface;
 
-abstract class TestCase extends PHPUnitTestCase
+abstract class IntegrationTestCase extends TestCase
 {
     protected function createTestDatabase(): PDO
     {
@@ -510,7 +805,7 @@ declare(strict_types=1);
 
 namespace PortableContent\Tests\Unit;
 
-use PortableContent\Tests\TestCase;
+use PHPUnit\Framework\TestCase;
 
 final class ExampleTest extends TestCase
 {
@@ -594,7 +889,7 @@ ls -la coverage/
 Run these commands to verify everything is working:
 
 ```bash
-# Check PHP version
+# Check PHP version (should be 8.3+)
 php --version
 
 # Check Composer
@@ -603,14 +898,21 @@ composer --version
 # Verify autoloading works
 composer dump-autoload
 
-# Run tests
-composer test
+# Run all quality checks
+composer test                    # Run tests
+composer cs-check               # Check code style
+composer phpstan               # Run static analysis
+composer composer-normalize    # Check composer.json format
+composer security-audit       # Security check
 
 # Check project structure
 ls -la
 
 # Verify dependencies
 composer show
+
+# Test GitHub Actions locally (if act is installed)
+# act -j test
 ```
 
 ### Expected Output Examples:
@@ -622,13 +924,25 @@ $ composer test
 PHPUnit 11.x.x by Sebastian Bergmann and contributors.
 OK (3 tests, 3 assertions)
 
+$ composer cs-check
+PHP CS Fixer 3.x by Fabien Potencier and Dariusz Ruminski.
+Loaded config default from ".php-cs-fixer.php".
+No files need fixing.
+
+$ composer phpstan
+PHPStan - PHP Static Analysis Tool 1.x.x
+[OK] No errors
+
 $ ls -la
+drwxr-xr-x  .github/
 drwxr-xr-x  src/
 drwxr-xr-x  tests/
 drwxr-xr-x  storage/
 drwxr-xr-x  migrations/
 drwxr-xr-x  vendor/
 drwxr-xr-x  coverage/
+-rw-r--r--  .php-cs-fixer.php
+-rw-r--r--  phpstan.neon
 -rw-r--r--  composer.json
 -rw-r--r--  composer.lock
 -rw-r--r--  phpunit.xml
@@ -669,8 +983,22 @@ drwxr-xr-x  coverage/
 - [ ] PHPUnit configured with proper settings
 - [ ] Base TestCase class with testing utilities
 - [ ] Example tests run successfully
-- [ ] Coverage reporting configured
+- [ ] Coverage reporting configured with Codecov v4
 - [ ] Test database helpers available
+
+### Code Quality Tools:
+- [ ] PHP CS Fixer configured with modern standards
+- [ ] PHPStan configured for level 9 analysis
+- [ ] Composer normalize for consistent composer.json
+- [ ] Security audit tools configured
+- [ ] All quality tools have composer scripts
+
+### CI/CD Pipeline:
+- [ ] GitHub Actions workflows for testing
+- [ ] GitHub Actions workflows for linting
+- [ ] Multi-PHP version testing (8.3, 8.4)
+- [ ] Codecov integration with unit and integration flags
+- [ ] Automated security auditing
 
 ### Documentation:
 - [ ] README.md updated with project information
