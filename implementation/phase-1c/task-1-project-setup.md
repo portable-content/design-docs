@@ -106,7 +106,7 @@ portable-content-sdk/
 
 ```json
 {
-  "name": "@portable-content/sdk",
+  "name": "@portable-content/typescript-sdk",
   "version": "0.1.0",
   "description": "Core TypeScript SDK for Portable Content System",
   "main": "dist/index.js",

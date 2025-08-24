@@ -23,9 +23,11 @@ Implement GraphQL as a specific transport adapter using the transport-agnostic i
 ### API Operations
 - [ ] All CRUD operations implemented via GraphQL
 - [ ] Capability-based variant selection in GraphQL queries
-- [ ] GraphQL subscriptions for real-time updates
 - [ ] Batch operations and query optimization
 - [ ] Proper fragment usage for reusable query parts
+
+### Real-Time Features
+- [ ] GraphQL subscriptions for real-time updates (see sync/graphql-sync-transport.md)
 
 ### Client Integration
 - [ ] Adapters for popular GraphQL clients
@@ -718,11 +720,11 @@ export class GraphQLAPIClient extends BaseAPIClient {
 ## Validation Steps
 
 1. **Code Generation**: Run `npm run codegen` and verify types are generated correctly
-2. **GraphQL Operations**: Test all queries, mutations, and subscriptions
+2. **GraphQL Operations**: Test all queries and mutations
 3. **Client Adapters**: Test with Apollo Client and urql
 4. **Error Handling**: Test GraphQL-specific error scenarios
-5. **Subscriptions**: Test real-time functionality
-6. **Performance**: Verify query optimization and caching
+5. **Performance**: Verify query optimization and caching
+6. **Real-Time Features**: Test subscriptions (see sync/graphql-sync-transport.md)
 
 ## Testing
 
@@ -805,3 +807,10 @@ After completing this task:
 - [Apollo Client](https://www.apollographql.com/docs/react/)
 - [urql](https://formidable.com/open-source/urql/)
 - [GraphQL Best Practices](https://graphql.org/learn/best-practices/)
+
+## Related Sync Documentation
+
+For GraphQL-based real-time synchronization:
+- [Sync Architecture Overview](./sync/README.md)
+- [GraphQL Sync Transport](./sync/graphql-sync-transport.md)
+- [Transport Sync Interfaces](./sync/transport-sync-interfaces.md)

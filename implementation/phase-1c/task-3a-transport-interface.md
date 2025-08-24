@@ -78,20 +78,9 @@ export interface APIClient {
    * Refresh variants for content blocks
    */
   refreshVariants(id: string, blockIds?: string[]): Promise<string[]>;
-  
-  /**
-   * Subscribe to content changes (optional, for real-time transports)
-   */
-  subscribeToContent?(id: string, callback: (content: ContentItem) => void): () => void;
-  
-  /**
-   * Subscribe to search result changes (optional, for real-time transports)
-   */
-  subscribeToSearch?(
-    query: string, 
-    options: SearchOptions,
-    callback: (results: SearchResult) => void
-  ): () => void;
+
+  // Real-time subscription methods moved to sync interfaces
+  // See: sync/transport-sync-interfaces.md
 }
 
 /**
@@ -188,6 +177,7 @@ export interface Transport {
   
   /**
    * Subscribe to real-time updates (optional)
+   * Extended sync capabilities in: sync/transport-sync-interfaces.md
    */
   subscribe?<TData = any>(
     operation: TransportOperation,
@@ -308,29 +298,8 @@ export abstract class BaseAPIClient implements APIClient {
     };
   }
 
-  /**
-   * Check if real-time subscriptions are supported
-   */
-  get supportsRealTime(): boolean {
-    return typeof this.transport.subscribe === 'function';
-  }
-
-  /**
-   * Subscribe to content changes (if supported)
-   */
-  subscribeToContent?(id: string, callback: (content: ContentItem) => void): () => void {
-    if (!this.transport.subscribe) {
-      throw new Error('Real-time subscriptions not supported by this transport');
-    }
-
-    const operation: TransportOperation = {
-      type: 'subscription',
-      name: 'contentUpdated',
-      metadata: { contentId: id }
-    };
-
-    return this.transport.subscribe(operation, { id }, callback);
-  }
+  // Real-time subscription methods moved to sync interfaces
+  // See: sync/transport-sync-interfaces.md for complete implementation
 
   /**
    * Close transport connection
@@ -529,45 +498,8 @@ export class PortableContentClient {
     return await this.apiClient.refreshVariants(id, blockIds);
   }
 
-  /**
-   * Subscribe to content changes (if supported by transport)
-   */
-  subscribeToContent(id: string, callback: (content: ContentItem) => void): () => void {
-    if (!this.apiClient.subscribeToContent) {
-      throw new Error('Real-time subscriptions not supported by this transport');
-    }
-    
-    return this.apiClient.subscribeToContent(id, callback);
-  }
-
-  /**
-   * Subscribe to search result changes (if supported by transport)
-   */
-  subscribeToSearch(
-    query: string,
-    options: SearchOptions,
-    callback: (results: SearchResult) => void
-  ): () => void {
-    if (!this.apiClient.subscribeToSearch) {
-      throw new Error('Real-time search subscriptions not supported by this transport');
-    }
-    
-    return this.apiClient.subscribeToSearch(query, options, callback);
-  }
-
-  /**
-   * Check if real-time subscriptions are supported
-   */
-  get supportsRealTime(): boolean {
-    return typeof this.apiClient.subscribeToContent === 'function';
-  }
-
-  /**
-   * Check if real-time search is supported
-   */
-  get supportsRealTimeSearch(): boolean {
-    return typeof this.apiClient.subscribeToSearch === 'function';
-  }
+  // Real-time subscription methods moved to sync interfaces
+  // See: sync/transport-sync-interfaces.md for complete implementation
 }
 ```
 
@@ -648,3 +580,10 @@ After completing this task:
 - [Abstract Classes](https://www.typescriptlang.org/docs/handbook/classes.html#abstract-classes)
 - [Error Handling Patterns](https://blog.logrocket.com/error-handling-typescript/)
 - [API Design Best Practices](https://docs.microsoft.com/en-us/azure/architecture/best-practices/api-design)
+
+## Related Sync Documentation
+
+For real-time synchronization and collaborative features:
+- [Sync Architecture Overview](./sync/README.md)
+- [Transport Sync Interfaces](./sync/transport-sync-interfaces.md)
+- [GraphQL Sync Transport](./sync/graphql-sync-transport.md)
