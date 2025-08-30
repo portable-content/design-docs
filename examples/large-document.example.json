@@ -1,0 +1,58 @@
+{
+  "contentSpecVersion": "0.1.0",
+  "registryVersion": "0.1.0",
+  "id": "content_large_doc",
+  "type": "article",
+  "title": "Large Technical Document",
+  "summary": "A comprehensive technical document stored externally due to size.",
+  "blocks": [
+    {
+      "id": "large_doc_1",
+      "kind": "document",
+      "content": {
+        "primary": {
+          "type": "external",
+          "mediaType": "text/markdown",
+          "uri": "https://cdn.example.com/docs/comprehensive-guide.md",
+          "bytes": 2048576,
+          "contentHash": "sha256:abc123def456789...",
+          "generatedBy": "content-processor",
+          "toolVersion": "1.2.0",
+          "createdAt": "2024-01-15T10:30:00Z"
+        },
+        "alternatives": [
+          {
+            "mediaType": "text/html;profile=markdown",
+            "uri": "https://cdn.example.com/docs/comprehensive-guide.html",
+            "bytes": 3072000,
+            "generatedBy": "markdown-renderer",
+            "toolVersion": "2.1.0",
+            "createdAt": "2024-01-15T10:35:00Z"
+          },
+          {
+            "mediaType": "text/plain;role=extract",
+            "uri": "https://cdn.example.com/docs/comprehensive-guide.txt",
+            "bytes": 1536000,
+            "generatedBy": "text-extractor",
+            "toolVersion": "1.0.5",
+            "createdAt": "2024-01-15T10:32:00Z"
+          },
+          {
+            "mediaType": "application/pdf",
+            "uri": "https://cdn.example.com/docs/comprehensive-guide.pdf",
+            "bytes": 4096000,
+            "generatedBy": "pdf-generator",
+            "toolVersion": "3.0.1",
+            "createdAt": "2024-01-15T10:40:00Z"
+          }
+        ]
+      }
+    }
+  ],
+  "representations": {
+    "summary": { "blocks": ["large_doc_1"] }
+  },
+  "createdAt": "2024-01-15T10:30:00Z",
+  "updatedAt": "2024-01-15T10:40:00Z",
+  "createdBy": "content-author-123"
+}

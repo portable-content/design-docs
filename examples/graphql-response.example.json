@@ -12,16 +12,34 @@
           {
             "id": "b1",
             "kind": "markdown",
-            "variants": [
-              { "mediaType": "text/html;profile=markdown", "uri": "https://cdn.example.com/content_123/b1.html" }
-            ]
+            "content": {
+              "primary": {
+                "type": "inline",
+                "mediaType": "text/markdown",
+                "source": "## Hello Portable Content"
+              },
+              "alternatives": [
+                { "mediaType": "text/html;profile=markdown", "uri": "https://cdn.example.com/content_123/b1.html" }
+              ]
+            }
           },
           {
             "id": "b2",
             "kind": "mermaid",
-            "variants": [
-              { "mediaType": "image/svg+xml;profile=mermaid", "uri": "https://cdn.example.com/content_123/b2.svg", "width": 800, "height": 400 }
-            ]
+            "content": {
+              "primary": {
+                "type": "external",
+                "mediaType": "image/svg+xml",
+                "uri": "https://cdn.example.com/content_123/b2.svg",
+                "width": 800,
+                "height": 400
+              },
+              "source": {
+                "type": "inline",
+                "mediaType": "text/plain",
+                "source": "graph TD; A-->B;"
+              }
+            }
           }
         ]
       }

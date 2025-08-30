@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://portablecontent.dev/spec/schemas/image-payload-source.schema.json",
+  "title": "ImagePayloadSource",
+  "description": "PayloadSource for image content with visual properties",
+  "allOf": [
+    { "$ref": "payload-source.schema.json" },
+    {
+      "properties": {
+        "width": { 
+          "type": "integer", 
+          "minimum": 1,
+          "description": "Width of the image in pixels"
+        },
+        "height": { 
+          "type": "integer", 
+          "minimum": 1,
+          "description": "Height of the image in pixels"
+        },
+        "alt": { 
+          "type": "string",
+          "description": "Alternative text for accessibility"
+        }
+      }
+    }
+  ]
+}

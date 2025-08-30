@@ -3,35 +3,13 @@
   "$id": "https://portablecontent.dev/spec/schemas/block.schema.json",
   "title": "Block",
   "type": "object",
-  "required": ["id", "kind", "variants"],
+  "required": ["id", "kind", "content"],
   "properties": {
     "id": { "type": "string" },
     "kind": { "type": "string" },
-    "payload": { "type": ["object", "string", "null"] },
-    "variants": {
-      "type": "array",
-      "items": { "$ref": "#/definitions/Variant" },
-      "minItems": 0
-    }
+    "content": { "$ref": "block-content.schema.json" }
   },
-  "definitions": {
-    "Variant": {
-      "type": "object",
-      "required": ["mediaType"],
-      "properties": {
-        "mediaType": { "type": "string" },
-        "uri": { "type": ["string", "null"] },
-        "width": { "type": ["integer", "null"], "minimum": 0 },
-        "height": { "type": ["integer", "null"], "minimum": 0 },
-        "bytes": { "type": ["integer", "null"], "minimum": 0 },
-        "contentHash": { "type": ["string", "null"] },
-        "generatedBy": { "type": ["string", "null"] },
-        "toolVersion": { "type": ["string", "null"] },
-        "createdAt": { "type": ["string", "null"], "format": "date-time" }
-      },
-      "additionalProperties": false
-    }
-  },
+
   "additionalProperties": false
 }
 

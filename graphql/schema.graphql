@@ -3,76 +3,108 @@
 scalar JSON
 scalar MediaType
 
+# PayloadSource union for inline vs external content
+union PayloadSource = InlinePayloadSource | ExternalPayloadSource
+
+# BlockContent structure with primary, source, and alternatives
+type BlockContent {
+  primary: PayloadSource!
+  source: PayloadSource
+  alternatives: [PayloadSource!]
+}
+
+type InlinePayloadSource {
+  type: String!
+  mediaType: String!
+  source: String!
+  # Text-specific fields
+  encoding: String
+  language: String
+  # Image-specific fields
+  width: Int
+  height: Int
+  alt: String
+  # Mermaid-specific fields
+  theme: String
+}
+
+type ExternalPayloadSource {
+  type: String!
+  mediaType: String!
+  uri: String!
+  bytes: Int
+  contentHash: String
+  generatedBy: String
+  toolVersion: String
+  createdAt: String
+  # Text-specific fields
+  encoding: String
+  language: String
+  # Image-specific fields
+  width: Int
+  height: Int
+  alt: String
+  # Document-specific fields
+  pages: Int
+  # Mermaid-specific fields
+  theme: String
+}
+
 interface Block {
   id: ID!
   kind: String!
-  payload: JSON
-  variants: [Variant!]!
+  content: BlockContent!
 }
 
 type MarkdownBlock implements Block {
   id: ID!
   kind: String!
-  payload: JSON
-  variants: [Variant!]!
+  content: BlockContent!
 }
 
 type MermaidBlock implements Block {
   id: ID!
   kind: String!
-  payload: JSON
-  variants: [Variant!]!
+  content: BlockContent!
 }
 
 type ImageBlock implements Block {
   id: ID!
   kind: String!
-  payload: JSON
-  variants: [Variant!]!
+  content: BlockContent!
 }
 
 type VideoBlock implements Block {
   id: ID!
   kind: String!
-  payload: JSON
-  variants: [Variant!]!
+  content: BlockContent!
 }
 
 type CodeBlock implements Block {
   id: ID!
   kind: String!
-  payload: JSON
-  variants: [Variant!]!
+  content: BlockContent!
 }
 
 type DocumentBlock implements Block {
   id: ID!
   kind: String!
-  payload: JSON
-  variants: [Variant!]!
+  content: BlockContent!
 }
 
 type RepoBlock implements Block {
   id: ID!
   kind: String!
-  payload: JSON
-  variants: [Variant!]!
+  content: BlockContent!
 }
 
 type EmbedBlock implements Block {
   id: ID!
   kind: String!
-  payload: JSON
-  variants: [Variant!]!
+  content: BlockContent!
 }
 
-type Variant {
-  mediaType: MediaType!
-  uri: String
-  width: Int
-  height: Int
-  bytes: Int
-}
+
 
 input CapabilitiesInput {
   accept: [MediaType!]!
@@ -81,7 +113,7 @@ input CapabilitiesInput {
   network: String
 }
 
-type ContentItem {
+type ContentManifest {
   id: ID!
   type: String!
   title: String
@@ -89,17 +121,17 @@ type ContentItem {
   blocks: [Block!]!
 }
 
-# Optional: Note type referencing ContentItem for implementations that expose Notes
+# Optional: Note type referencing ContentManifest for implementations that expose Notes
 # (Not normative for the content spec itself)
 
 type Note {
   id: ID!
   title: String
-  content: ContentItem
+  content: ContentManifest
   summary: String
 }
 
 type Query {
-  content(id: ID!, capabilities: CapabilitiesInput, representation: String): ContentItem
+  content(id: ID!, capabilities: CapabilitiesInput, representation: String): ContentManifest
 }
 

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://portablecontent.dev/spec/schemas/text-payload-source.schema.json",
+  "title": "TextPayloadSource",
+  "description": "PayloadSource for text-based content (markdown, HTML, plain text, code, etc.)",
+  "allOf": [
+    { "$ref": "payload-source.schema.json" },
+    {
+      "properties": {
+        "encoding": { 
+          "type": "string", 
+          "default": "utf-8",
+          "description": "Character encoding of the text content"
+        },
+        "language": { 
+          "type": "string",
+          "description": "Language code (ISO 639-1) for the text content"
+        }
+      }
+    }
+  ]
+}

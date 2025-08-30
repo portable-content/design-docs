@@ -15,11 +15,35 @@ scalar URI
 interface Block {
   id: ID!
   kind: String!
-  payload: JSON
-  variants: [Variant!]!
+  content: BlockContent!
 }
 
-type ContentItem {
+type BlockContent {
+  primary: PayloadSource!
+  source: PayloadSource
+  alternatives: [PayloadSource!]
+}
+
+union PayloadSource = InlinePayloadSource | ExternalPayloadSource
+
+type InlinePayloadSource {
+  type: String!
+  mediaType: String!
+  source: String!
+}
+
+type ExternalPayloadSource {
+  type: String!
+  mediaType: String!
+  uri: String!
+  bytes: Int
+  contentHash: String
+  generatedBy: String
+  toolVersion: String
+  createdAt: DateTime
+}
+
+type ContentManifest {
   id: ID!
   type: String!
   title: String
@@ -29,18 +53,6 @@ type ContentItem {
   createdAt: DateTime
   updatedAt: DateTime
   createdBy: String
-}
-
-type Variant {
-  mediaType: String!
-  uri: URI
-  width: Int
-  height: Int
-  bytes: Int
-  contentHash: String
-  generatedBy: String
-  toolVersion: String
-  createdAt: DateTime
 }
 
 # Block implementations

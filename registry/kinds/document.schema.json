@@ -1,15 +1,36 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://portablecontent.dev/registry/kinds/document.schema.json",
-  "title": "Document payload",
-  "type": "object",
-  "properties": {
-    "uri": { "type": "string" },
-    "contentType": { "type": ["string", "null"] },
-    "pages": { "type": ["integer", "null"], "minimum": 1 },
-    "bytes": { "type": ["integer", "null"], "minimum": 0 }
-  },
-  "required": ["uri"],
-  "additionalProperties": false
+  "title": "Document content",
+  "description": "Document content structure (external only) with optional alternatives",
+  "allOf": [
+    { "$ref": "../../schemas/block-content.schema.json" },
+    {
+      "properties": {
+        "primary": {
+          "allOf": [
+            { "$ref": "../../schemas/payload-source.schema.json" },
+            {
+              "properties": {
+                "type": {
+                  "const": "external",
+                  "description": "Documents are always external content"
+                },
+                "pages": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "Number of pages in the document"
+                }
+              }
+            }
+          ]
+        },
+        "alternatives": {
+          "type": "array",
+          "items": { "$ref": "../../schemas/payload-source.schema.json" }
+        }
+      }
+    }
+  ]
 }
 

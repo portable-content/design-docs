@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://portablecontent.dev/spec/schemas/block-content.schema.json",
+  "title": "BlockContent",
+  "description": "Content structure for blocks with primary delivery format, optional source, and alternatives",
+  "type": "object",
+  "properties": {
+    "primary": {
+      "$ref": "payload-source.schema.json",
+      "description": "Primary content format for delivery to clients"
+    },
+    "source": {
+      "$ref": "payload-source.schema.json", 
+      "description": "Optional source format for storage/editing (backend use)"
+    },
+    "alternatives": {
+      "type": "array",
+      "items": { "$ref": "payload-source.schema.json" },
+      "description": "Optional alternative delivery formats"
+    }
+  },
+  "required": ["primary"],
+  "additionalProperties": false
+}

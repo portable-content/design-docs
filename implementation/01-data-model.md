@@ -328,19 +328,19 @@ index.upsert(vectors=[
 
 ## Validation Rules
 
-### ContentItem Validation
+### ContentManifest Validation
 - `id` must be valid UUID
 - `type` must be non-empty string
 - `blocks` array can be empty but must be present
-- All block IDs must be unique within content item
+- All block IDs must be unique within content manifest
 - Referenced blocks in representations must exist
 
-### Block Validation  
+### Block Validation
 - `id` must be valid UUID
 - `kind` must be registered in registry
-- `payload` must validate against kind schema
-- At least one variant must be present
-- Variant media types must be allowed for the kind
+- `content` must validate against kind schema
+- `primary` content must be present
+- Alternative media types must be allowed for the kind
 
 ### Variant Validation
 - `mediaType` must be valid RFC 6838 format

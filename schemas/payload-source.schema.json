@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://portablecontent.dev/spec/schemas/payload-source.schema.json",
+  "title": "PayloadSource",
+  "description": "Base interface for content sources, supporting both inline and external content",
+  "oneOf": [
+    {
+      "title": "InlinePayloadSource",
+      "description": "Content stored inline within the payload",
+      "type": "object",
+      "properties": {
+        "type": { 
+          "const": "inline",
+          "description": "Indicates content is stored inline"
+        },
+        "mediaType": { 
+          "type": "string",
+          "description": "MIME media type of the content (RFC 6838)"
+        },
+        "source": { 
+          "type": "string",
+          "description": "Raw content data (text content or base64 for binary)"
+        }
+      },
+      "required": ["type", "mediaType", "source"],
+      "additionalProperties": false
+    },
+    {
+      "title": "ExternalPayloadSource",
+      "description": "Content stored externally and referenced by URI",
+      "type": "object",
+      "properties": {
+        "type": { 
+          "const": "external",
+          "description": "Indicates content is stored externally"
+        },
+        "mediaType": { 
+          "type": "string",
+          "description": "MIME media type of the content (RFC 6838)"
+        },
+        "uri": { 
+          "type": "string", 
+          "format": "uri",
+          "description": "URI where the content can be accessed"
+        },
+        "bytes": { 
+          "type": "integer", 
+          "minimum": 0,
+          "description": "Size of the content in bytes"
+        },
+        "contentHash": { 
+          "type": "string",
+          "description": "SHA-256 hash of the content for integrity verification"
+        },
+        "generatedBy": { 
+          "type": "string",
+          "description": "Tool or system that generated this content"
+        },
+        "toolVersion": { 
+          "type": "string",
+          "description": "Version of the tool that generated this content"
+        },
+        "createdAt": { 
+          "type": "string", 
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when this content was created"
+        }
+      },
+      "required": ["type", "mediaType", "uri"],
+      "additionalProperties": false
+    }
+  ]
+}

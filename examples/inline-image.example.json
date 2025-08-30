@@ -1,0 +1,79 @@
+{
+  "contentSpecVersion": "0.1.0",
+  "registryVersion": "0.1.0",
+  "id": "content_with_icons",
+  "type": "interface",
+  "title": "UI Interface with Inline Icons",
+  "summary": "Interface design with small icons stored inline for performance.",
+  "blocks": [
+    {
+      "id": "settings_icon",
+      "kind": "image",
+      "content": {
+        "primary": {
+          "type": "inline",
+          "mediaType": "image/png",
+          "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+          "width": 32,
+          "height": 32,
+          "alt": "Settings icon"
+        }
+      }
+    },
+    {
+      "id": "user_avatar",
+      "kind": "image",
+      "content": {
+        "primary": {
+          "type": "external",
+          "mediaType": "image/jpeg",
+          "uri": "https://cdn.example.com/avatars/user123.jpg",
+          "width": 128,
+          "height": 128,
+          "alt": "User profile picture",
+          "bytes": 8192
+        },
+        "alternatives": [
+          {
+            "mediaType": "image/webp",
+            "uri": "https://cdn.example.com/avatars/user123.webp",
+            "width": 128,
+            "height": 128,
+            "bytes": 6144
+          },
+          {
+            "mediaType": "image/jpeg;width=64",
+            "uri": "https://cdn.example.com/avatars/user123_64.jpg",
+            "width": 64,
+            "height": 64,
+            "bytes": 3072
+          }
+        ]
+      }
+    },
+    {
+      "id": "interface_text",
+      "kind": "markdown",
+      "content": {
+        "primary": {
+          "type": "inline",
+          "mediaType": "text/markdown",
+          "source": "## User Interface\n\nThis interface combines inline icons for performance with external images for larger content."
+        },
+        "alternatives": [
+          {
+            "mediaType": "text/html;profile=markdown",
+            "uri": "https://cdn.example.com/content_with_icons/interface_text.html"
+          }
+        ]
+      }
+    }
+  ],
+  "representations": {
+    "full": { "blocks": ["settings_icon", "user_avatar", "interface_text"] },
+    "icons_only": { "blocks": ["settings_icon"] }
+  },
+  "createdAt": "2024-01-15T14:20:00Z",
+  "updatedAt": "2024-01-15T14:20:00Z",
+  "createdBy": "ui-designer-456"
+}

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://portablecontent.dev/spec/schemas/content-item.schema.json",
-  "title": "ContentItem",
+  "$id": "https://portablecontent.dev/spec/schemas/content-manifest.schema.json",
+  "title": "ContentManifest",
   "type": "object",
   "required": ["id", "type", "blocks"],
   "properties": {

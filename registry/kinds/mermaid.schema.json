@@ -1,13 +1,41 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://portablecontent.dev/registry/kinds/mermaid.schema.json",
-  "title": "Mermaid payload",
-  "type": "object",
-  "properties": {
-    "source": { "type": "string" },
-    "theme": { "type": ["string", "null"] }
-  },
-  "required": ["source"],
-  "additionalProperties": false
+  "title": "Mermaid content",
+  "description": "Mermaid diagram content with SVG primary delivery and text source",
+  "allOf": [
+    { "$ref": "../../schemas/block-content.schema.json" },
+    {
+      "properties": {
+        "primary": {
+          "allOf": [
+            { "$ref": "../../schemas/payload-source.schema.json" },
+            {
+              "properties": {
+                "mediaType": { "pattern": "^image/(svg\\+xml|png)" }
+              }
+            }
+          ]
+        },
+        "source": {
+          "allOf": [
+            { "$ref": "../../schemas/text-payload-source.schema.json" },
+            {
+              "properties": {
+                "theme": {
+                  "type": "string",
+                  "description": "Mermaid theme name (default, dark, forest, etc.)"
+                }
+              }
+            }
+          ]
+        },
+        "alternatives": {
+          "type": "array",
+          "items": { "$ref": "../../schemas/payload-source.schema.json" }
+        }
+      }
+    }
+  ]
 }
 

@@ -2,7 +2,7 @@
 
 ### Overview
 - Purpose: Define a cross-language, extensible system to model, transform, and deliver heterogeneous content (markdown, code, images, video, mermaid diagrams, documents, repos, embeds) across React Native, PHP, and Python.
-- Core idea: A canonical JSON model (ContentItem → Blocks) plus a Variant mechanism that carries multiple representations (e.g., markdown → HTML, mermaid → SVG/PNG) chosen per client capability.
+- Core idea: A canonical JSON model (ContentManifest → Blocks) with BlockContent structure that separates storage format, delivery format, and alternatives chosen per client capability.
 - Drivers:
   - Some formats render 1:1 (markdown → Markdown renderer), others need domain-specific variants (mermaid → SVG/PNG for mobile).
   - Ensure consistent behavior across languages, safe rendering, and efficient delivery.
@@ -23,37 +23,69 @@
 ### Related Documents (spec-local)
 - GraphQL SDL Stub: ./graphql/schema.graphql
 - JSON Schemas:
-  - ./schemas/content-item.schema.json
+  - ./schemas/content-manifest.schema.json
   - ./schemas/block.schema.json
+  - ./schemas/block-content.schema.json
 - Registry reference: ./registry/registry.json and ./registry.md
 
 ## High-Level Architecture
-- Canonical JSON: ContentItem with ordered Blocks.
-- Variants: Each Block keeps a map of media-type → representation metadata (URI or inline payload), optionally annotated with parameters (profile, role, dpi, page, width).
-- Content Type Registry: Central registry describing kinds, payload schema, allowed variants, transform rules, sanitizers, fallbacks, cache policy.
+- Canonical JSON: ContentManifest with ordered Blocks.
+- BlockContent: Each Block has structured content with primary delivery format, optional source, and alternatives, optionally annotated with parameters (profile, role, dpi, page, width).
+- Content Type Registry: Central registry describing kinds, content schema, allowed alternatives, transform rules, sanitizers, fallbacks, cache policy.
 - Capability Negotiation: Clients advertise supported media types and hints; server/API selects best variant or triggers generation.
 - Transform Pipeline: Python-based workers produce variants (e.g., mermaid → SVG/PNG, PDF → thumbnail) stored in object storage/CDN.
 - SDKs: Thin libraries in RN/TS, PHP, Python to validate, select variants, and render/consume safely.
 
 ## Canonical Data Model
-- ContentItem
+- ContentManifest
   - id, type, metadata (title, createdAt, updatedAt, createdBy), blocks[], optional representations (named views like summary/full).
 - Block
-  - id, kind (markdown, image, video, mermaid, code, document, repo, embed), payload (canonical), variants (media-type → descriptor), meta (e.g., language, theme).
+  - id, kind (markdown, image, video, mermaid, code, document, repo, embed), content (BlockContent structure).
+- BlockContent
+  - primary (main delivery format), source (optional storage format), alternatives (optional alternative delivery formats).
 
-Example (indicative):
+Example (updated with ContentManifest and BlockContent):
 ```json
 {
   "id": "content_123",
   "type": "note",
   "title": "System Design",
   "blocks": [
-    {"id":"b1","kind":"markdown","payload":{"source":"# Title"},
-     "variants":{"text/markdown": {"uri": "s3://.../b1.md"},
-                  "text/html": {"uri": "https://cdn/.../b1.html"}}},
-    {"id":"b2","kind":"mermaid","payload":{"source":"graph TD;A-->B;"},
-     "variants":{"image/svg+xml;profile=mermaid": {"uri": "https://cdn/.../b2.svg"},
-                  "image/png;profile=mermaid;dpi=192": {"uri":"https://cdn/.../b2@2x.png"}}}
+    {
+      "id":"b1",
+      "kind":"markdown",
+      "content": {
+        "primary": {
+          "type": "inline",
+          "mediaType": "text/markdown",
+          "source":"# Title"
+        },
+        "alternatives": [
+          {"mediaType": "text/html", "uri": "https://cdn/.../b1.html"}
+        ]
+      }
+    },
+    {
+      "id":"b2",
+      "kind":"mermaid",
+      "content": {
+        "primary": {
+          "type": "external",
+          "mediaType": "image/svg+xml",
+          "uri": "https://cdn/.../b2.svg",
+          "width": 800,
+          "height": 400
+        },
+        "source": {
+          "type": "inline",
+          "mediaType": "text/plain",
+          "source":"graph TD;A-->B;"
+        },
+        "alternatives": [
+          {"mediaType": "image/png;profile=mermaid;dpi=192", "uri":"https://cdn/.../b2@2x.png"}
+        ]
+      }
+    }
   ]
 }
 ```
@@ -71,8 +103,8 @@ Example (indicative):
 ## Content Type Registry
 - Central JSON/YAML describing each block kind:
   - id: "markdown" | "code" | "image" | "video" | "mermaid" | "document" | "repo" | "embed"
-  - payloadSchema: JSON Schema reference
-  - allowedVariants: list of media-type patterns
+  - contentSchema: JSON Schema reference for BlockContent structure
+  - allowedAlternatives: list of media-type patterns
   - transformerRules: input → outputs (tool, options)
   - sanitization: html/markdown policies, URL allowlists, max sizes
   - fallbackPolicy: e.g., prefer SVG then PNG@2x for iOS/Android
@@ -113,23 +145,43 @@ Example (indicative):
   - PHP: API shaping, selection server-side for web clients.
   - Python: ingestion/transforms; optional server-side rendering for web/exports.
 
-## Supported Block Kinds (v1)
-- markdown: payload { source }
-  - variants: text/markdown (canonical), text/html (optional), text/plain (extract)
-- code: payload { language, source }
-  - variants: text/plain (canonical), text/html;profile=highlighted (optional)
-- image: payload { uri|storageRef, alt, width, height }
-  - variants: image/avif|webp|jpeg at sizes (role=thumb, role=full)
-- video: payload { uri, poster?, duration, captions? }
-  - variants: video/hls, video/mp4; image/png (poster)
-- mermaid: payload { source, theme? }
-  - variants: image/svg+xml;profile=mermaid, image/png;profile=mermaid;dpi=96|192
-- document: payload { uri, contentType, pages?, bytes? }
-  - variants: image/png;role=thumbnail;page=1;width=256|512, text/plain;role=extract
-- repo: payload { provider, owner, name, ref?, path? }
-  - variants: application/json;role=summary, text/markdown;role=readme, image/png;role=preview
-- embed: payload { url, provider?, type? }
-  - variants: text/html;role=embed, image/png;role=preview
+## Supported Block Kinds (v1) - Updated with BlockContent Structure
+
+All blocks now use BlockContent structure with primary delivery format, optional source, and alternatives:
+
+- **markdown**: BlockContent with TextPayloadSource
+  - Primary: `{ type: "inline", mediaType: "text/markdown", source: "# Hello" }`
+  - Alternatives: text/html, text/plain;role=extract
+
+- **mermaid**: BlockContent with visual primary and text source
+  - Primary: `{ type: "external", mediaType: "image/svg+xml", uri: "https://...", width: 800, height: 400 }`
+  - Source: `{ type: "inline", mediaType: "text/plain", source: "graph TD; A-->B;", theme: "default" }`
+  - Alternatives: image/png;profile=mermaid;dpi=96|192
+
+- **image**: BlockContent with ImagePayloadSource
+  - Primary: `{ type: "external", mediaType: "image/jpeg", uri: "https://...", width: 800, height: 600, alt: "Photo" }`
+  - Source: `{ type: "external", mediaType: "image/raw", uri: "https://..." }` (optional)
+  - Alternatives: image/avif, image/webp at different sizes
+
+- **document**: BlockContent (external only)
+  - Primary: `{ type: "external", mediaType: "application/pdf", uri: "https://...", pages: 25, bytes: 2048576 }`
+  - Alternatives: image/png;role=thumbnail;page=1, text/plain;role=extract
+
+- **code**: BlockContent with TextPayloadSource + language
+  - Primary: `{ type: "inline", mediaType: "text/plain", source: "console.log('hello');", language: "javascript" }`
+  - Alternatives: text/html;profile=highlighted
+
+- **video**: BlockContent (external only)
+  - Primary: `{ type: "external", mediaType: "video/mp4", uri: "https://...", duration: 120 }`
+  - Alternatives: video/hls, image/png;role=poster
+
+- **repo**: BlockContent (external only)
+  - Primary: `{ type: "external", mediaType: "application/json", uri: "https://api.github.com/repos/...", provider: "github" }`
+  - Alternatives: text/markdown;role=readme, image/png;role=preview
+
+- **embed**: BlockContent (external only)
+  - Primary: `{ type: "external", mediaType: "text/html", uri: "https://...", provider: "youtube" }`
+  - Alternatives: image/png;role=preview
 
 ## API Design (GraphQL for Clients, MCP or GraphQL for Agents)
 
@@ -226,14 +278,14 @@ final class VariantDescriptor {
 }
 
 interface ContentRepository {
-  public function save(ContentItem $item): void; // upsert database + upload manifests
-  public function getById(string $id): ContentItem; // load manifest + hydrate
+  public function save(ContentManifest $manifest): void; // upsert database + upload manifests
+  public function getById(string $id): ContentManifest; // load manifest + hydrate
   public function search(SearchQuery $query): SearchResult; // search content
 }
 
 final class ContentHydrator {
   public function __construct(private BlockHydratorRegistry $registry) {}
-  public function hydrateFromJson(array $manifest): ContentItem { /* ... */ }
+  public function hydrateFromJson(array $manifest): ContentManifest { /* ... */ }
 }
 
 final class BlockHydratorRegistry {
@@ -295,9 +347,9 @@ sequenceDiagram
   participant T as Transform Worker (Python)
 
   C->>G: mutation saveContent(blocks)
-  G->>R: persist ContentItem (manifest to S, upsert to W)
-  R->>S: PUT item.json, payloads
-  R->>W: Upsert ContentItem (title, kinds, extracts, manifest_uri)
+  G->>R: persist ContentManifest (manifest to S, upsert to W)
+  R->>S: PUT manifest.json, content
+  R->>W: Upsert ContentManifest (title, kinds, extracts, manifest_uri)
   G-->>C: contentId
   Note over G,T: enqueue transforms for missing variants (e.g., mermaid SVG/PNG)
   T->>S: write variants

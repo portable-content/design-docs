@@ -39,10 +39,10 @@ Create `src/types/core.ts`:
 
 ```typescript
 /**
- * Core content item representing a piece of portable content
+ * Core content manifest representing a piece of portable content
  */
-export interface ContentItem {
-  /** Unique identifier for the content item */
+export interface ContentManifest {
+  /** Unique identifier for the content manifest */
   id: string;
   /** Content type (e.g., 'note', 'article', 'document') */
   type: string;
@@ -70,34 +70,20 @@ export interface Block {
   id: string;
   /** Block type identifier (e.g., 'markdown', 'mermaid', 'image') */
   kind: string;
-  /** Block-specific payload data */
-  payload: unknown;
-  /** Available variants for this block */
-  variants: Variant[];
+  /** Structured content with primary delivery format */
+  content: BlockContent;
 }
 
 /**
- * A specific representation/variant of a block's content
+ * Structured content for blocks with primary delivery format and alternatives
  */
-export interface Variant {
-  /** MIME media type of this variant */
-  mediaType: string;
-  /** URI where the variant content can be accessed */
-  uri?: string;
-  /** Width in pixels (for visual content) */
-  width?: number;
-  /** Height in pixels (for visual content) */
-  height?: number;
-  /** Size in bytes */
-  bytes?: number;
-  /** SHA-256 content hash */
-  contentHash?: string;
-  /** Tool that generated this variant */
-  generatedBy?: string;
-  /** Version of the generation tool */
-  toolVersion?: string;
-  /** ISO 8601 creation timestamp */
-  createdAt?: string;
+export interface BlockContent {
+  /** Primary content format for delivery to clients */
+  primary: PayloadSource;
+  /** Optional source format for storage/editing (backend use) */
+  source?: PayloadSource;
+  /** Optional alternative delivery formats */
+  alternatives?: PayloadSource[];
 }
 
 /**
@@ -119,35 +105,63 @@ Create `src/types/blocks.ts`:
 import { Block } from './core';
 
 /**
- * Payload for markdown content blocks
+ * Base interface for all payload sources
  */
-export interface MarkdownBlockPayload {
-  /** Raw markdown source text */
+export interface PayloadSource {
+  /** Content location type */
+  type: 'inline' | 'external';
+  /** MIME media type of the content */
+  mediaType: string;
+}
+
+/**
+ * Inline content stored within the payload
+ */
+export interface InlinePayloadSource extends PayloadSource {
+  type: 'inline';
+  /** Raw content data (text or base64 for binary) */
   source: string;
 }
 
 /**
- * Payload for Mermaid diagram blocks
+ * External content referenced by URI
  */
-export interface MermaidBlockPayload {
-  /** Mermaid diagram source code */
-  source: string;
-  /** Optional theme name (default, dark, forest, etc.) */
-  theme?: string;
-}
-
-/**
- * Payload for image blocks
- */
-export interface ImageBlockPayload {
-  /** URI to the original image */
+export interface ExternalPayloadSource extends PayloadSource {
+  type: 'external';
+  /** URI where content can be accessed */
   uri: string;
+  /** Size in bytes */
+  bytes?: number;
+  /** SHA-256 content hash */
+  contentHash?: string;
+  /** Tool that generated this content */
+  generatedBy?: string;
+  /** Version of the generation tool */
+  toolVersion?: string;
+  /** ISO 8601 creation timestamp */
+  createdAt?: string;
+}
+
+/**
+ * PayloadSource for text-based content
+ */
+export interface TextPayloadSource extends PayloadSource {
+  /** Character encoding */
+  encoding?: string;
+  /** Language code (ISO 639-1) */
+  language?: string;
+}
+
+/**
+ * PayloadSource for image content
+ */
+export interface ImagePayloadSource extends PayloadSource {
+  /** Width in pixels */
+  width?: number;
+  /** Height in pixels */
+  height?: number;
   /** Alternative text for accessibility */
   alt?: string;
-  /** Original image width in pixels */
-  width?: number;
-  /** Original image height in pixels */
-  height?: number;
 }
 
 /**
@@ -155,23 +169,41 @@ export interface ImageBlockPayload {
  */
 export interface MarkdownBlock extends Block {
   kind: 'markdown';
-  payload: MarkdownBlockPayload;
+  content: BlockContent & {
+    primary: TextPayloadSource;
+    source?: TextPayloadSource;
+  };
 }
 
 export interface MermaidBlock extends Block {
   kind: 'mermaid';
-  payload: MermaidBlockPayload;
+  content: BlockContent & {
+    primary: PayloadSource; // Usually SVG/PNG
+    source?: TextPayloadSource & { theme?: string };
+  };
 }
 
 export interface ImageBlock extends Block {
   kind: 'image';
-  payload: ImageBlockPayload;
+  content: BlockContent & {
+    primary: ImagePayloadSource;
+    source?: ImagePayloadSource;
+    alternatives?: ImagePayloadSource[];
+  };
+}
+
+export interface DocumentBlock extends Block {
+  kind: 'document';
+  content: BlockContent & {
+    primary: ExternalPayloadSource & { pages?: number };
+    alternatives?: PayloadSource[];
+  };
 }
 
 /**
  * Union type for all known block types
  */
-export type TypedBlock = MarkdownBlock | MermaidBlock | ImageBlock;
+export type TypedBlock = MarkdownBlock | MermaidBlock | ImageBlock | DocumentBlock;
 
 /**
  * Type guard to check if a block is a markdown block
@@ -346,22 +378,39 @@ export const ContentItemSchema = z.object({
 });
 
 /**
- * Block-specific payload schemas
+ * PayloadSource schemas
  */
-export const MarkdownPayloadSchema = z.object({
+export const InlinePayloadSourceSchema = z.object({
+  type: z.literal('inline'),
+  mediaType: z.string().min(1),
   source: z.string().min(1)
 });
 
-export const MermaidPayloadSchema = z.object({
-  source: z.string().min(1),
-  theme: z.string().optional()
+export const ExternalPayloadSourceSchema = z.object({
+  type: z.literal('external'),
+  mediaType: z.string().min(1),
+  uri: z.string().url(),
+  bytes: z.number().int().positive().optional(),
+  contentHash: z.string().optional(),
+  generatedBy: z.string().optional(),
+  toolVersion: z.string().optional(),
+  createdAt: z.string().datetime().optional()
 });
 
-export const ImagePayloadSchema = z.object({
-  uri: z.string().url(),
-  alt: z.string().optional(),
+export const PayloadSourceSchema = z.union([
+  InlinePayloadSourceSchema,
+  ExternalPayloadSourceSchema
+]);
+
+export const TextPayloadSourceSchema = PayloadSourceSchema.extend({
+  encoding: z.string().optional(),
+  language: z.string().optional()
+});
+
+export const ImagePayloadSourceSchema = PayloadSourceSchema.extend({
   width: z.number().int().positive().optional(),
-  height: z.number().int().positive().optional()
+  height: z.number().int().positive().optional(),
+  alt: z.string().optional()
 });
 
 /**

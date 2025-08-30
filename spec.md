@@ -10,7 +10,7 @@ Editor story is v2; this spec covers delivery.
 - Registry: Authoritative catalog of kinds, schemas, transforms, and policies.
 
 ## 2. Data Model (JSON)
-- ContentItem (PCM)
+- ContentManifest (PCM)
   - id (string, URI-safe)
   - type (string)
   - title (string, optional)
@@ -21,15 +21,17 @@ Editor story is v2; this spec covers delivery.
 - Block
   - id (string)
   - kind (string; namespaced allowed: vendor:kind)
-  - payload (object|string|null)
-  - variants (array of Variant)
-- Variant
-  - mediaType (string; RFC 6838, with optional parameters per RFC 6906)
-  - uri (string, optional)
-  - width, height, bytes (integers, optional)
-  - contentHash (string, optional)
-  - generatedBy, toolVersion (strings, optional)
-  - createdAt (RFC3339 string, optional)
+  - content (BlockContent; structured content with primary delivery format)
+- BlockContent (structured content for blocks)
+  - primary (PayloadSource; main delivery format for clients)
+  - source (PayloadSource, optional; storage/editing format for backend)
+  - alternatives (array of PayloadSource, optional; alternative delivery formats)
+- PayloadSource (unified interface for content sources)
+  - type (string; "inline" or "external")
+  - mediaType (string; RFC 6838)
+  - For inline: source (string; raw content or base64 for binary)
+  - For external: uri (string), bytes, contentHash, generatedBy, toolVersion, createdAt (optional)
+  - Specialized extensions: TextPayloadSource (encoding, language), ImagePayloadSource (width, height, alt)
 
 Normative JSON Schemas are in ./schemas/.
 
